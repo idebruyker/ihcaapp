@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Immuno Histo Chemistry Analysis Processor</title>
+</head>
+<body>
+    <h1>Upload CSV File</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".csv" required>
+        <button type="submit">Upload and Process</button>
+    </form>
+    {% if plot_url %}
+        <h2>Generated Plot</h2>
+        <img src="{{ url_for('download_file', filename='plot.png') }}" alt="Plot">
+        <br>
+        <a href="{{ url_for('download_file', filename='plot.png') }}" download>Download Plot</a>
+    {% endif %}
+
+    {% if csv_url %}
+        <h2>Processed CSV</h2>
+        <a href="{{ url_for('download_file', filename='processed_output.csv') }}" download>Download Processed CSV</a>
+    {% endif %}
+    </body>
+</html>
