@@ -13,14 +13,9 @@
     </form>
     {% if plot_url %}
         <h2>Generated Plot</h2>
-        <img src="{{ url_for('download_file', filename='plot.png') }}" alt="Plot">
-        <br>
-        <a href="{{ url_for('download_file', filename='plot.png') }}" download>Download Plot</a>
+        <!-- Display the Base64-encoded image -->
+        <img src="data:image/png;base64,{{ plot_url }}" alt="Custom Plot">
     {% endif %}
 
-    {% if csv_url %}
-        <h2>Processed CSV</h2>
-        <a href="{{ url_for('download_file', filename='processed_output.csv') }}" download>Download Processed CSV</a>
-    {% endif %}
     </body>
 </html>
