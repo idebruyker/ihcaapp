@@ -4,7 +4,7 @@ import os
 import joblib
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-import numpy as np
+from io import StringIO
 
 app = Flask(__name__)
 
@@ -18,13 +18,10 @@ else:
 
 loaded_model = joblib.load(model_filename)
 # Configure upload and processed folders
-UPLOAD_FOLDER = 'uploads'
 PROCESSED_FOLDER = 'processed'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PROCESSED_FOLDER'] = PROCESSED_FOLDER
 
 # Ensure folders exist
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(PROCESSED_FOLDER, exist_ok=True)
 
 @app.route('/', methods=['GET', 'POST'])
@@ -33,16 +30,25 @@ def index():
         # Handle file upload
         file = request.files['file']
         if file and file.filename.endswith('.csv'):
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-            file.save(filepath)
-
+            # read file
+            file_content = file.read() #read file content as bytes
+            text = file_content.decode('utf-8') #decode bytes to string
             # Process the CSV file
-            df = pd.read_csv(filepath)
-
+            df = pd.read_csv(StringIO(text),usecols=[7,8,21,27,33,39,51]) #read string as csv
+            df.rename(columns={'Centroid X µm': 'Centroid.X.µm', 
+                        'Centroid Y µm': 'Centroid.Y.µm', 
+                        'Nucleus: Opal 480 mean': 'Nucleus..Opal.480.mean', 
+                        'Nucleus: Opal 520 mean': 'Nucleus..Opal.520.mean', 
+                        'Nucleus: Opal 570 mean': 'Nucleus..Opal.570.mean', 
+                        'Nucleus: Opal 620 mean': 'Nucleus..Opal.620.mean', 
+                        'Nucleus: Opal 690 mean': 'Nucleus..Opal.690.mean'}, 
+                        inplace=True)
+            
             # Make predictions on the new dataset
             predictions = loaded_model.predict(df)
             # Add predictions to the new dataset 
             df['Predictions'] = predictions
+            print(df.head())
 
             # Example: Generate a plot
             # plt.figure()
@@ -55,9 +61,9 @@ def index():
             # df.to_csv(processed_csv_path, index=False)
 
             # Provide download links
-            return render_template('index.html', 
-                                 plot_url=plot_path, 
-                                 csv_url=processed_csv_path)
+            return render_template('index.html'), 
+                                #  plot_url=plot_path, 
+                                #  csv_url=processed_csv_path)
 
     return render_template('index.html')
 
