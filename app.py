@@ -17,7 +17,6 @@ else:
     print(f'Model file not found: {model_filename}')
 
 loaded_model = joblib.load(model_filename)
-
 # Configure upload and processed folders
 UPLOAD_FOLDER = 'uploads'
 PROCESSED_FOLDER = 'processed'
