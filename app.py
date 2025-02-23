@@ -25,18 +25,18 @@ else:
 
 loaded_model = joblib.load(model_filename)
 
-# Configure upload and processed folders
-UPLOAD_FOLDER = 'uploads'
-PROCESSED_FOLDER = 'processed'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['PROCESSED_FOLDER'] = PROCESSED_FOLDER
+# # Configure upload and processed folders
+# UPLOAD_FOLDER = 'uploads'
+# PROCESSED_FOLDER = 'processed'
+# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# app.config['PROCESSED_FOLDER'] = PROCESSED_FOLDER
 
 # title
 sample_title = 'Immuno Histo Chemistry Analysis'
             
-# Ensure folders exist
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(PROCESSED_FOLDER, exist_ok=True)
+# # Ensure folders exist
+# os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# os.makedirs(PROCESSED_FOLDER, exist_ok=True)
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
