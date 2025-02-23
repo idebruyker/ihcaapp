@@ -12,9 +12,7 @@
         <button type="submit">Upload and Process</button>
     </form>
     {% if plot_url %}
-        <h2>Generated Plot</h2>
-        <!-- Display the Base64-encoded image -->
-        <img src="data:image/png;base64,{{ plot_url }}" alt="Custom Plot">
+        <img src="{{ plot_url }}" alt="Plot" style="max-width: 100%; height: auto;">
     {% endif %}
 
     </body>

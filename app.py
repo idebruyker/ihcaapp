@@ -8,8 +8,12 @@ from io import StringIO
 import io
 import numpy as np
 import base64
+import warnings
 
 app = Flask(__name__)
+
+# general
+warnings.filterwarnings("ignore") # only warnings show for xticlables and yticklabels, but have not effect except for filling up terminal window
 
 # Load the saved model
 model_filename = 'best_model.pkl'
@@ -21,6 +25,18 @@ else:
 
 loaded_model = joblib.load(model_filename)
 
+# Configure upload and processed folders
+UPLOAD_FOLDER = 'uploads'
+PROCESSED_FOLDER = 'processed'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['PROCESSED_FOLDER'] = PROCESSED_FOLDER
+
+# title
+sample_title = 'Immuno Histo Chemistry Analysis'
+            
+# Ensure folders exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(PROCESSED_FOLDER, exist_ok=True)
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -45,7 +61,6 @@ def index():
             predictions = loaded_model.predict(df)
             # Add predictions to the new dataset 
             df['Predictions'] = predictions
-            print(df.head())
 
             # present
             # types 
@@ -79,6 +94,8 @@ def index():
 
             colors_plot1 = df_plot1['Predictions'].map(color_map_plot1)
             colors_plot2 = df_plot2['Predictions'].map(color_map_plot2)
+
+            plt.switch_backend('Agg')  # Switch to 'Agg' to prevent the figure from being displayed
 
             # create grid
             fig = plt.figure(layout=None, figsize=(30,11)) 
@@ -261,7 +278,7 @@ def index():
             nicheproportion_percentage = nicheproportion * 100
 
             # build numbers table to download
-            numbers_table = pd.dfFrame({
+            numbers_table = pd.DataFrame({
                 'Sample': [sample_title],
                 'CD8 area': [cd8_area],
                 'CD8 count': [cd8_count],
@@ -294,10 +311,6 @@ def index():
                 'Niche Proportion': [nicheproportion],
                 'Niche Percent': [nicheproportion_percentage]})
             
-            numbers_table.to_csv(f"./numbers/{sample_title}_numbers.csv", index=False)
-
-            all_numbers_table = pd.concat([all_numbers_table, numbers_table])
-
             # build numbers table to display
             numbers_table_ax3 = numbers_table[numbers_table.columns[1:17]]
             numbers_table_ax4 = numbers_table[numbers_table.columns[17:34]] #up by 2 once niche fields added
@@ -316,29 +329,37 @@ def index():
 
             ax4.axis('off')
             ############### general and show ####################################################################################################################
-            sample_title = 'test'
             fig.suptitle(sample_title, fontsize=20, color='red', fontweight='bold')  # Add title to the figure
 
-            # Save the plot to BytesIO object
-            buf = io.BytesIO()
-            plt.savefig(buf, dpi=300, bbox_inches='tight', format='png') #1200 possible
-            plt.close()
-            buf.seek(0)
+            # # Save the plot to BytesIO object
+            # buf = io.BytesIO()
+            # plt.savefig(buf, dpi=300, bbox_inches='tight', format='png') #1200 possible
+            # plt.close()
+            # buf.seek(0)
 
-            # Encode the image in Base64
-            plot_data = base64.b64encode(buf.getvalue()).decode('utf-8')
+            # # Encode the image in Base64
+            # plot_data = base64.b64encode(buf.getvalue()).decode('utf-8')
 
             # Example: Generate a plot
             # plt.figure()
             # df.plot(kind='bar')  # Example plot (customize as needed)
-            # plot_path = os.path.join(app.config['PROCESSED_FOLDER'], 'plot.png')
+
             # plt.savefig(plot_path)
 
+            # Save the plot
+            plot_png = f"IHCA.png"
+            plot_path = os.path.join('static', plot_png)
+            # plot_path = os.path.join(app.config['PROCESSED_FOLDER'], plot_png)
+            print(plot_path)
+            plt.savefig(plot_path, dpi=300, bbox_inches='tight') #1200 possible
+            # plt.show()
+            plt.close()
 
 
             # Provide download links
             return render_template('index.html', 
-                                    plot_url=plot_data)
+                                    plot_url=plot_path)
+                                    # plot_url=plot_data)
                                 #  plot_url=plot_path, 
                                 #  csv_url=processed_csv_path)
 
@@ -346,7 +367,7 @@ def index():
 
 @app.route('/download/<filename>')
 def download_file(filename):
-    return send_file(os.path.join(app.config['PROCESSED_FOLDER'], filename), as_attachment=True)
+    return send_file(os.path.join('static', filename), as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
